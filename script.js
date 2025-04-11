@@ -1,15 +1,43 @@
-const quotes = [
-    "Believe you can and you're halfway there.",
-    "Push yourself, because no one else is going to do it for you.",
-    "Success doesn’t just find you. You have to go out and get it.",
-    "The harder you work for something, the greater you’ll feel when you achieve it.",
-    "Dream it. Wish it. Do it.",
-    "Sometimes later becomes never. Do it now.",
-    "Great things never come from comfort zones."
-  ];
-  
-  function getQuote() {
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    document.getElementById("quote").innerText = quotes[randomIndex];
+const quoteBox = document.getElementById("quote");
+const button = document.getElementById("inspire-btn");
+const loader = document.getElementById("loader");
+
+// Replace with your OpenRouter API key (from https://openrouter.ai/)
+const API_KEY = "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";
+
+button.addEventListener("click", async () => {
+  quoteBox.textContent = "";
+  loader.classList.remove("hidden");
+
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "mistral/mistral-7b-instruct",
+        messages: [
+          {
+            role: "system",
+            content: "You are an AI that generates short, original, deeply inspirational quotes in under 25 words."
+          },
+          {
+            role: "user",
+            content: "Give me one unique motivational quote."
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    const quote = data.choices[0].message.content.trim();
+    quoteBox.textContent = quote;
+  } catch (err) {
+    quoteBox.textContent = "⚠️ Failed to get quote. Please try again.";
+    console.error(err);
   }
-  
+
+  loader.classList.add("hidden");
+});
